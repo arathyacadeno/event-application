@@ -640,10 +640,16 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return { success: true };
       }
 
-      if (error) {
+      // If the backend actively rejected credentials (e.g. 401 wrong password or 403 disabled)
+      const isNetworkErr = (error as any)?.isNetworkError || error?.message?.toLowerCase().includes('failed to fetch') || error?.message?.toLowerCase().includes('cannot reach');
+      if (error && !isNetworkErr) {
         const errMsg = error.message || 'Invalid credentials. Access is restricted to authorized administrators and assigned staff.';
         showToast(errMsg);
         return { success: false, error: errMsg };
+      }
+
+      if (isNetworkErr) {
+        console.warn('[Login] API server unreachable, falling back to local credentials:', error?.message);
       }
     } catch (apiErr) {
       console.warn('Neon remote login check fallback:', apiErr);

@@ -1,13 +1,25 @@
 import { Event, Registration } from '../types';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+function getApiBase(): string {
+  const configured = import.meta.env.VITE_API_URL;
+  if (typeof window !== 'undefined') {
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    // If running on a deployed domain (like Vercel), never call localhost
+    if (!isLocalhost && (!configured || configured.includes('localhost') || configured.includes('127.0.0.1'))) {
+      return '';
+    }
+  }
+  return configured || '';
+}
+
+const API_BASE = getApiBase();
 
 export const DEFAULT_ORG_ID = 'f56b03a9-9097-4638-8c4a-6f68227b2789';
 export const DEFAULT_USER_ID = 'd79ebd86-73b7-4f55-9108-cdda19919cf0';
 export const SUPABASE_PROJECT_REF = 'ep-frosty-lab-b56kd9nt';
 export const NEON_LABEL = 'Neon Postgres';
 
-async function apiRequest<T>(path: string, options?: RequestInit): Promise<{ data: T | null; error: Error | null }> {
+async function apiRequest<T>(path: string, options?: RequestInit): Promise<{ data: T | null; error: (Error & { isNetworkError?: boolean; code?: any }) | null }> {
   try {
     const response = await fetch(`${API_BASE}${path}`, {
       headers: {
@@ -21,15 +33,18 @@ async function apiRequest<T>(path: string, options?: RequestInit): Promise<{ dat
     if (!response.ok) {
       const err: any = new Error(payload.message || payload.error || `Neon API ${response.status}`);
       err.code = payload.error || response.status;
+      err.status = response.status;
       err.existingRegistration = payload.existingRegistration;
       return { data: null, error: err };
     }
 
     return { data: payload as T, error: null };
   } catch (err: any) {
+    const errorObj: any = new Error(err?.message || 'Cannot reach Neon API. Start it with npm run dev (API on port 3001).');
+    errorObj.isNetworkError = true;
     return {
       data: null,
-      error: new Error(err?.message || 'Cannot reach Neon API. Start it with npm run dev (API on port 3001).'),
+      error: errorObj,
     };
   }
 }
