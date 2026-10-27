@@ -785,7 +785,11 @@ export const WizardThemeBuilderScreen: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => { setWizardStep(4); setScreen('07_create_settings'); }}
+            onClick={() => {
+              updateWizardDraft({ theme: currentTheme });
+              setWizardStep(4);
+              setScreen('07_create_settings');
+            }}
             className="h-10 px-7 rounded-xl bg-[#1463FF] hover:bg-[#0E4ED8] text-white text-xs sm:text-sm font-bold shadow-[0_3px_12px_rgba(20,99,255,0.25)] flex items-center gap-2 transition-all cursor-pointer"
           >
             <span>Next: Settings & Limits</span>

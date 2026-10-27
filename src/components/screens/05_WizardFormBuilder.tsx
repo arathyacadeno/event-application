@@ -50,6 +50,12 @@ export const WizardFormBuilderScreen: React.FC = () => {
     ? wizardDraft.form_schema
     : defaultInitialFields;
 
+  React.useEffect(() => {
+    if (!wizardDraft.form_schema || wizardDraft.form_schema.length === 0) {
+      updateWizardDraft({ form_schema: defaultInitialFields });
+    }
+  }, []);
+
   const fieldTypes: { type: FormField['type']; label: string; icon: any }[] = [
     { type: 'text', label: 'Short Text', icon: Type },
     { type: 'email', label: 'Email Address', icon: Mail },
@@ -481,7 +487,11 @@ export const WizardFormBuilderScreen: React.FC = () => {
 
             <button
               type="button"
-              onClick={() => { setWizardStep(3); setScreen('06_create_theme'); }}
+              onClick={() => {
+                updateWizardDraft({ form_schema: fields });
+                setWizardStep(3);
+                setScreen('06_create_theme');
+              }}
               className="h-10 sm:h-11 px-6 rounded-xl bg-[#1463FF] hover:bg-[#0E4ED8] text-white text-xs sm:text-sm font-bold shadow-[0_4px_14px_rgba(20,99,255,0.3)] flex items-center gap-2 transition-all cursor-pointer"
             >
               <span>Next: Theme & Branding</span>

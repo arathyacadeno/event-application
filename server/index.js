@@ -78,14 +78,29 @@ function mapEvent(row) {
     created_by: row.created_by,
     created_at: toIso(row.created_at),
     updated_at: toIso(row.updated_at || row.created_at),
-    views_count: 0,
-    form_schema: row.form?.schema || [],
-    theme: row.theme || {
-      template: 'workshop',
-      colors: {},
-      typography: {},
-      layout: 'centered',
-      banner_url: row.banner_url || null,
+    form_schema: (row.form?.schema && Array.isArray(row.form.schema) && row.form.schema.length > 0)
+      ? row.form.schema
+      : [
+          { id: 'f_name', type: 'text', label: 'Full Name', placeholder: 'Enter your full name', required: true, order: 1, section: 'Personal Info' },
+          { id: 'f_email', type: 'email', label: 'Email Address', placeholder: 'name@example.com', required: true, order: 2, section: 'Personal Info' },
+          { id: 'f_phone', type: 'phone', label: 'Mobile Number', placeholder: '+91 98765 43210', required: true, order: 3, section: 'Personal Info' },
+        ],
+    theme: {
+      template: row.theme?.template || 'workshop',
+      colors: {
+        primary: '#1463FF',
+        secondary: '#4F46E5',
+        background: '#F8FAFC',
+        surface: '#FFFFFF',
+        text: '#0F172A',
+        button: '#FF7A00',
+        buttonText: '#FFFFFF',
+        accent: '#06B6D4',
+        ...(row.theme?.colors || {}),
+      },
+      typography: row.theme?.typography || { fontFamily: 'Plus Jakarta Sans' },
+      layout: row.theme?.layout || 'centered',
+      banner_url: row.banner_url || row.theme?.banner_url || null,
     },
     settings: {
       registration_opens_at: toIso(row.registration_opens_at) || '',

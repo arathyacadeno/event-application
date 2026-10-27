@@ -866,9 +866,20 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       created_at: wizardDraft.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
       views_count: wizardDraft.views_count || 1,
-      form_schema: wizardDraft.form_schema || [],
+      form_schema: (wizardDraft.form_schema && wizardDraft.form_schema.length > 0)
+        ? wizardDraft.form_schema
+        : [
+            { id: 'f_name', type: 'text', label: 'Full Name', placeholder: 'Enter your full name', required: true, order: 1, section: 'Personal Info' },
+            { id: 'f_email', type: 'email', label: 'Email Address', placeholder: 'name@example.com', required: true, order: 2, section: 'Personal Info' },
+            { id: 'f_phone', type: 'phone', label: 'Mobile Number', placeholder: '+91 98765 43210', required: true, order: 3, section: 'Personal Info' },
+          ],
       theme: {
-        ...(wizardDraft.theme || themePresets.workshop),
+        ...themePresets.workshop,
+        ...(wizardDraft.theme || {}),
+        colors: {
+          ...themePresets.workshop.colors,
+          ...(wizardDraft.theme?.colors || {})
+        },
         banner_url: wizardDraft.banner_url || wizardDraft.theme?.banner_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
       },
       settings: wizardDraft.settings || {

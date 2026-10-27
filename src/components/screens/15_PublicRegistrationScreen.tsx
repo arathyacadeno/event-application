@@ -93,16 +93,45 @@ export const PublicRegistrationScreen: React.FC = () => {
 
   const evt = selectedEvent;
 
-  const theme = evt.theme || {
-    colors: {
-      primary: '#2563EB',
-      background: '#F8FAFC',
-      text: '#0F172A',
-      button: '#FF7A00',
-      buttonText: '#FFFFFF'
-    },
-    typography: { fontFamily: 'Plus Jakarta Sans' }
+  const defaultColors = {
+    primary: '#1463FF',
+    secondary: '#4F46E5',
+    background: '#F8FAFC',
+    surface: '#FFFFFF',
+    text: '#0F172A',
+    button: '#FF7A00',
+    buttonText: '#FFFFFF',
+    accent: '#06B6D4'
   };
+
+  const themeColors = {
+    ...defaultColors,
+    ...(evt.theme?.colors || {})
+  };
+
+  if (!themeColors.primary) themeColors.primary = defaultColors.primary;
+  if (!themeColors.button) themeColors.button = defaultColors.button;
+  if (!themeColors.background) themeColors.background = defaultColors.background;
+  if (!themeColors.text) themeColors.text = defaultColors.text;
+
+  const theme = {
+    ...evt.theme,
+    colors: themeColors,
+    typography: {
+      ...(evt.theme?.typography || {}),
+      fontFamily: evt.theme?.typography?.fontFamily || 'Plus Jakarta Sans',
+    }
+  };
+
+  const defaultFormFields = [
+    { id: 'f_name', type: 'text', label: 'Full Name', placeholder: 'Enter your full name', required: true, order: 1, section: 'Personal Info' },
+    { id: 'f_email', type: 'email', label: 'Email Address', placeholder: 'name@example.com', required: true, order: 2, section: 'Personal Info' },
+    { id: 'f_phone', type: 'phone', label: 'Mobile Number', placeholder: '+91 98765 43210', required: true, order: 3, section: 'Personal Info' },
+  ];
+
+  const activeFormSchema = (evt.form_schema && evt.form_schema.length > 0)
+    ? evt.form_schema
+    : defaultFormFields;
 
   const isPhoneField = (f: any) => {
     return f.type === 'phone' || f.id === 'f_phone' || /phone|mobile|contact|whatsapp/i.test(f.label || '');
@@ -200,8 +229,8 @@ export const PublicRegistrationScreen: React.FC = () => {
     if (isSubmitting || isSubmittingRef.current) return;
     setErrorMessage(null);
 
-    if (evt.form_schema) {
-      for (const field of evt.form_schema) {
+    if (activeFormSchema) {
+      for (const field of activeFormSchema) {
         const val = formData[field.id];
         
         // Check required fields
@@ -512,7 +541,7 @@ export const PublicRegistrationScreen: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <fieldset disabled={isSubmitting} className="contents space-y-4">
               {/* Dynamic fields */}
-              {evt.form_schema?.map((f: any) => {
+              {activeFormSchema.map((f: any) => {
                 const val = formData[f.id] || '';
                 const isPhone = isPhoneField(f);
                 const isEmail = isEmailField(f);
