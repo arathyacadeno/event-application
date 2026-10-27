@@ -29,7 +29,8 @@ export const PublicRegistrationScreen: React.FC = () => {
     setScreen, 
     setSelectedRegistrationId,
     currentUser,
-    isEventLoading
+    isEventLoading,
+    showToast
   } = useEventStore();
 
   const [formData, setFormData] = useState<Record<string, any>>({});
