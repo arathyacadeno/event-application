@@ -720,6 +720,30 @@ export const PublicRegistrationScreen: React.FC = () => {
                           </button>
                         )}
                       </div>
+                    ) : f.type === 'date' ? (
+                      <div className="relative flex items-center">
+                        <input
+                          type="date"
+                          disabled={isSubmitting}
+                          value={
+                            val
+                              ? /^\d{4}-\d{2}-\d{2}$/.test(val)
+                                ? val
+                                : /^\d{2}\/\d{2}\/\d{4}$/.test(val)
+                                  ? val.split('/').reverse().join('-')
+                                  : val
+                              : ''
+                          }
+                          max={/birth|dob|age/i.test(f.label || '') ? new Date().toISOString().split('T')[0] : undefined}
+                          onChange={(e) => handleFieldChange(f.id, e.target.value, 'date')}
+                          onClick={(e) => {
+                            try {
+                              (e.currentTarget as any).showPicker?.();
+                            } catch {}
+                          }}
+                          className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-none transition-all font-medium disabled:opacity-60 cursor-pointer"
+                        />
+                      </div>
                     ) : (
                       <input
                         type={f.type === 'number' ? 'number' : 'text'}

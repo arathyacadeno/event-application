@@ -419,13 +419,26 @@ export const WizardPreviewPublishScreen: React.FC = () => {
                             >
                               {f.label} {f.required && <span className="text-[#E5484D]">*</span>}
                             </label>
-                            <input
-                              type="text"
-                              disabled
-                              placeholder={f.placeholder || `Enter ${f.label}`}
-                              style={{ color: theme.colors.text || '#334155' }}
-                              className="w-full h-8 px-2.5 bg-white border border-[#DCE5F0] rounded-lg text-xs placeholder-[#91A4C0]"
-                            />
+                            {f.type === 'date' ? (
+                              <div className="relative flex items-center">
+                                <input
+                                  type="text"
+                                  disabled
+                                  placeholder={f.placeholder || 'dd/mm/yyyy'}
+                                  style={{ color: theme.colors.text || '#334155' }}
+                                  className="w-full h-8 pl-2.5 pr-8 bg-white border border-[#DCE5F0] rounded-lg text-xs placeholder-[#91A4C0]"
+                                />
+                                <Calendar className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 pointer-events-none" />
+                              </div>
+                            ) : (
+                              <input
+                                type="text"
+                                disabled
+                                placeholder={f.placeholder || `Enter ${f.label}`}
+                                style={{ color: theme.colors.text || '#334155' }}
+                                className="w-full h-8 px-2.5 bg-white border border-[#DCE5F0] rounded-lg text-xs placeholder-[#91A4C0]"
+                              />
+                            )}
                           </div>
                         ))}
                       </div>
