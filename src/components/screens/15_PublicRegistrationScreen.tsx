@@ -199,13 +199,19 @@ export const PublicRegistrationScreen: React.FC = () => {
       return;
     }
 
+    // Dropdown and radio choices should be stored exactly as chosen
+    if (fieldType === 'dropdown' || fieldType === 'radio') {
+      setFormData(prev => ({ ...prev, [fieldId]: typeof val === 'string' ? val.trim() : val }));
+      return;
+    }
+
     // If it's textarea / bio / notes, convert using sentence case
     if (fieldType === 'textarea' || /bio|notes|about|reason|describe/i.test(fieldId)) {
       setFormData(prev => ({ ...prev, [fieldId]: typeof val === 'string' ? toSentenceCase(val) : val }));
       return;
     }
 
-    // For all general text inputs (Full Name, College, Company, Designation, City, etc.), convert small letters to Title Case
+    // For general text inputs (Full Name, College, Company, Designation, City, etc.), convert small letters to Title Case
     if (typeof val === 'string' && fieldType !== 'number' && fieldType !== 'date' && fieldType !== 'file') {
       setFormData(prev => ({ ...prev, [fieldId]: toTitleCase(val) }));
       return;
@@ -230,13 +236,24 @@ export const PublicRegistrationScreen: React.FC = () => {
     if (isSubmitting || isSubmittingRef.current) return;
     setErrorMessage(null);
 
+    const setValidationError = (msg: string) => {
+      setErrorMessage(msg);
+      showToast(`⚠️ ${msg}`);
+      setTimeout(() => {
+        const errEl = document.getElementById('submit-error-banner') || document.getElementById('form-error-banner');
+        if (errEl) {
+          errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    };
+
     if (activeFormSchema) {
       for (const field of activeFormSchema) {
         const val = formData[field.id];
         
         // Check required fields
-        if (field.required && (!val || String(val).trim() === '')) {
-          setErrorMessage(`Please fill out the required field: "${field.label}"`);
+        if (field.required && (val === undefined || val === null || String(val).trim() === '')) {
+          setValidationError(`Please fill out the required field: "${field.label}"`);
           return;
         }
 
@@ -245,9 +262,9 @@ export const PublicRegistrationScreen: React.FC = () => {
           const emailCheck = validateEmailWithDetails(val);
           if (!emailCheck.isValid) {
             if (emailCheck.suggestion) {
-              setErrorMessage(`Invalid email domain for "${field.label}". ${emailCheck.suggestion}`);
+              setValidationError(`Invalid email domain for "${field.label}". ${emailCheck.suggestion}`);
             } else {
-              setErrorMessage(`Please enter a valid email address (e.g. name@gmail.com) for "${field.label}".`);
+              setValidationError(`Please enter a valid email address (e.g. name@gmail.com) for "${field.label}".`);
             }
             return;
           }
@@ -257,7 +274,7 @@ export const PublicRegistrationScreen: React.FC = () => {
         if (isPhoneField(field) && val) {
           const phoneCheck = validateIndianMobile(val);
           if (!phoneCheck.isValid) {
-            setErrorMessage(`Invalid mobile number for "${field.label}". Indian numbers must be 10 digits and start with 6, 7, 8, or 9.`);
+            setValidationError(`Invalid mobile number for "${field.label}". Indian numbers must be 10 digits and start with 6, 7, 8, or 9.`);
             return;
           }
         }
@@ -268,7 +285,7 @@ export const PublicRegistrationScreen: React.FC = () => {
     if (formData.f_email) {
       const emailCheck = validateEmailWithDetails(formData.f_email);
       if (!emailCheck.isValid) {
-        setErrorMessage(emailCheck.suggestion ? `Invalid email. ${emailCheck.suggestion}` : 'Please enter a valid email address format (e.g. name@gmail.com).');
+        setValidationError(emailCheck.suggestion ? `Invalid email. ${emailCheck.suggestion}` : 'Please enter a valid email address format (e.g. name@gmail.com).');
         return;
       }
     }
@@ -276,13 +293,13 @@ export const PublicRegistrationScreen: React.FC = () => {
     if (formData.f_phone) {
       const phoneCheck = validateIndianMobile(formData.f_phone);
       if (!phoneCheck.isValid) {
-        setErrorMessage('Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.');
+        setValidationError('Please enter a valid 10-digit Indian mobile number starting with 6, 7, 8, or 9.');
         return;
       }
     }
 
     if (evt.settings?.require_consent && !consentAgreed) {
-      setErrorMessage('Please accept the event data consent agreement.');
+      setValidationError('Please accept the event data consent agreement.');
       return;
     }
 
@@ -367,7 +384,12 @@ export const PublicRegistrationScreen: React.FC = () => {
 
     const formattedPhone = rawPhone ? (rawPhone.startsWith('+') ? rawPhone : `+91 ${rawPhone}`) : '—';
     const finalName = rawName || 'Participant';
-    const finalEmail = rawEmail || 'attendee@example.com';
+    
+    // If no email field was collected on this form, generate a unique attendee email based on phone digits
+    const phoneDigits = rawPhone.replace(/\D/g, '').slice(-10);
+    const finalEmail = rawEmail 
+      ? rawEmail.toLowerCase().trim() 
+      : (phoneDigits ? `${phoneDigits}@attendee.in` : `attendee-${Date.now()}-${Math.floor(Math.random() * 1000)}@attendee.in`);
 
     try {
       const newReg = await submitRegistration(evt.id, {
@@ -385,6 +407,7 @@ export const PublicRegistrationScreen: React.FC = () => {
         console.warn('history.pushState notice:', historyErr);
       }
       setSelectedRegistrationId(newReg.id);
+      showToast('🎉 Registration confirmed successfully!');
       setScreen('16_registration_success');
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -395,12 +418,23 @@ export const PublicRegistrationScreen: React.FC = () => {
           return rEmail && rEmail === finalEmail.toLowerCase().trim();
         });
         setExistingDuplicateReg(existing || null);
-        setErrorMessage(
-          err?.message || `The email "${finalEmail}" is already registered for this event. Each participant can only register once.`
-        );
+        const msg = err?.message || `This participant is already registered for this event. Each participant can only register once.`;
+        setErrorMessage(msg);
+        showToast(`⚠️ ${msg}`);
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 50);
       } else {
         setExistingDuplicateReg(null);
-        setErrorMessage(err?.message || 'Failed to complete registration. Please try again.');
+        const msg = err?.message || 'Failed to complete registration. Please try again.';
+        setErrorMessage(msg);
+        showToast(`⚠️ ${msg}`);
+        setTimeout(() => {
+          const errEl = document.getElementById('submit-error-banner') || document.getElementById('form-error-banner');
+          if (errEl) {
+            errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 50);
       }
       isSubmittingRef.current = false;
       setIsSubmitting(false);
@@ -482,7 +516,7 @@ export const PublicRegistrationScreen: React.FC = () => {
 
           {/* Duplicate Registration Warning Banner */}
           {errorMessage && existingDuplicateReg && (
-            <div className="mb-5 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-950 text-xs shadow-md animate-shake">
+            <div id="form-error-banner" className="mb-5 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-950 text-xs shadow-md animate-shake">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-5 h-5 shrink-0 text-amber-600 mt-0.5" />
                 <div className="space-y-2 flex-1">
@@ -604,7 +638,7 @@ export const PublicRegistrationScreen: React.FC = () => {
                       <select
                         value={val}
                         disabled={isSubmitting}
-                        onChange={(e) => handleFieldChange(f.id, e.target.value)}
+                        onChange={(e) => handleFieldChange(f.id, e.target.value, 'dropdown')}
                         className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:bg-white focus:ring-2 focus:ring-blue-600 focus:outline-none transition-all font-medium disabled:opacity-60"
                       >
                         <option value="">{f.placeholder || 'Select an option...'}</option>
@@ -622,7 +656,7 @@ export const PublicRegistrationScreen: React.FC = () => {
                               value={opt}
                               disabled={isSubmitting}
                               checked={val === opt}
-                              onChange={() => handleFieldChange(f.id, opt)}
+                              onChange={() => handleFieldChange(f.id, opt, 'radio')}
                               className="text-blue-600 focus:ring-blue-500"
                             />
                             <span className="font-medium text-slate-700">{opt}</span>
@@ -786,6 +820,30 @@ export const PublicRegistrationScreen: React.FC = () => {
               </span>
               <span className="font-mono font-semibold">SECURE-SSL</span>
             </div>
+
+            {/* Prominent Inline Error Banner near Submit Button */}
+            {errorMessage && (
+              <div id="submit-error-banner" className="p-3.5 rounded-xl bg-rose-50 border-2 border-rose-300 text-rose-900 text-xs shadow-sm flex items-start gap-3 animate-shake mt-4">
+                <AlertCircle className="w-5 h-5 shrink-0 text-rose-600 mt-0.5" />
+                <div className="space-y-1.5 flex-1">
+                  <span className="font-bold text-xs block text-rose-950 uppercase tracking-wider">Submission Notice</span>
+                  <p className="text-xs text-rose-800 leading-relaxed font-medium">{errorMessage}</p>
+                  {existingDuplicateReg && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedRegistrationId(existingDuplicateReg.id);
+                        setScreen('16_registration_success');
+                      }}
+                      className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition-all shadow-xs cursor-pointer"
+                    >
+                      <span>View My Pass ({existingDuplicateReg.registration_code})</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Submit CTA */}
             <button

@@ -529,29 +529,44 @@ app.put('/api/registrations', async (req, res) => {
     }
 
     const userEmail = String(payload.email || payload.responses?.email || payload.responses?.f_email || '').trim().toLowerCase();
+    const isSyntheticEmail = !userEmail || userEmail.includes('@attendee.') || userEmail.includes('example.com');
+    const cleanDigits = (p) => String(p || '').replace(/\D/g, '').slice(-10);
+    const userPhone10 = cleanDigits(payload.phone || payload.responses?.phone || payload.responses?.f_phone);
 
-    // Server-side deduplication: ONLY check if the same EMAIL already registered for this event
-    if (userEmail) {
-      const existingRegs = await prisma.registration.findMany({
-        where: { event_id: eventUuid },
-      });
+    // Server-side deduplication
+    const existingRegs = await prisma.registration.findMany({
+      where: { event_id: eventUuid },
+    });
 
-      const matchedExisting = existingRegs.find(r => {
-        // If it's an existing record being updated by the same ID (e.g. admin edit), allow it
-        if (payload.id && r.id === payload.id) return false;
-        const resp = r.responses || {};
-        const rEmail = String(r.email || resp.email || resp.f_email || '').trim().toLowerCase();
-        return rEmail && userEmail === rEmail;
-      });
+    const matchedExisting = existingRegs.find(r => {
+      // If it's an existing record being updated by the same ID (e.g. admin edit), allow it
+      if (payload.id && r.id === payload.id) return false;
+      const resp = r.responses || {};
+      const rEmail = String(r.email || resp.email || resp.f_email || '').trim().toLowerCase();
+      const rIsSynthetic = !rEmail || rEmail.includes('@attendee.') || rEmail.includes('example.com');
 
-      if (matchedExisting) {
-        console.log(`[POSTGRES] Duplicate registration attempt rejected for email ${userEmail} (Event: ${eventUuid})`);
-        return res.status(409).json({
-          error: 'ALREADY_REGISTERED',
-          message: `The email "${userEmail}" is already registered for this event. Each participant can only register once with their email.`,
-          existingRegistration: mapRegistration(matchedExisting),
-        });
+      if (!isSyntheticEmail && !rIsSynthetic && userEmail === rEmail) {
+        return true;
       }
+      if (isSyntheticEmail && userPhone10 && userPhone10.length === 10) {
+        const rPhone10 = cleanDigits(r.phone || resp.phone || resp.f_phone);
+        if (rPhone10 === userPhone10) return true;
+      }
+      return false;
+    });
+
+    if (matchedExisting) {
+      const isPhoneDuplicate = isSyntheticEmail && userPhone10;
+      const duplicateMsg = isPhoneDuplicate
+        ? `The mobile number "${payload.phone || userPhone10}" is already registered for this event. Each participant can only register once.`
+        : `The email "${userEmail}" is already registered for this event. Each participant can only register once.`;
+
+      console.log(`[POSTGRES] Duplicate registration attempt rejected: ${duplicateMsg} (Event: ${eventUuid})`);
+      return res.status(409).json({
+        error: 'ALREADY_REGISTERED',
+        message: duplicateMsg,
+        existingRegistration: mapRegistration(matchedExisting),
+      });
     }
 
     const regUuid = isValidUUID(payload.id) ? payload.id : crypto.randomUUID();

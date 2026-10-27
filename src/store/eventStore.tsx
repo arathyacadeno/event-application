@@ -991,19 +991,40 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       throw err;
     }
 
-    // --- Deduplication Check (Strictly Email per Event) ---
+    // --- Deduplication Check ---
     const inputEmail = String(formData.email || '').trim().toLowerCase();
+    const isSyntheticEmail = !inputEmail || inputEmail.includes('@attendee.') || inputEmail.includes('example.com');
+    const inputPhoneDigits = String(formData.phone || formData.responses?.phone || formData.responses?.f_phone || '').replace(/\D/g, '').slice(-10);
 
-    const existingReg = inputEmail ? registrations.find(r => {
+    const existingReg = registrations.find(r => {
       const isSameEvent = r.event_id === finalEventId || r.event_id === eventId;
       if (!isSameEvent) return false;
 
       const rIdentifiers = extractRegistrationIdentifiers(r);
-      return rIdentifiers.email && inputEmail === rIdentifiers.email;
-    }) : null;
+      const rEmail = (rIdentifiers.email || '').toLowerCase().trim();
+      const rIsSynthetic = !rEmail || rEmail.includes('@attendee.') || rEmail.includes('example.com');
+
+      // 1. If real email exists on both, check email match
+      if (!isSyntheticEmail && !rIsSynthetic && inputEmail === rEmail) {
+        return true;
+      }
+
+      // 2. If no real email on either side, check 10-digit phone match
+      if (isSyntheticEmail && inputPhoneDigits && inputPhoneDigits.length === 10) {
+        if (rIdentifiers.phoneLast10 === inputPhoneDigits) {
+          return true;
+        }
+      }
+
+      return false;
+    });
 
     if (existingReg) {
-      const err: any = new Error(`The email "${formData.email}" is already registered for this event.`);
+      const isPhoneDup = isSyntheticEmail && inputPhoneDigits;
+      const dupMsg = isPhoneDup
+        ? `The mobile number "${formData.phone || inputPhoneDigits}" is already registered for this event. Each participant can only register once.`
+        : `The email "${formData.email}" is already registered for this event. Each participant can only register once.`;
+      const err: any = new Error(dupMsg);
       err.code = 'ALREADY_REGISTERED';
       err.existingRegistration = existingReg;
       throw err;
