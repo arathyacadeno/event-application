@@ -475,11 +475,37 @@ app.put('/api/registrations', async (req, res) => {
 
     const eventUuid = matchedEvent.id;
 
-    // Reject new registrations if the event is closed
-    if (matchedEvent.status === 'closed' && !payload.id) {
+    // Helper to check if event close date has passed (e.g. end of close date day)
+    const isDateExpired = (dateVal) => {
+      if (!dateVal) return false;
+      const str = String(dateVal).trim();
+      let closeTime;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(str)) {
+        const [y, m, d] = str.split('-').map(Number);
+        closeTime = new Date(y, m - 1, d, 23, 59, 59, 999).getTime();
+      } else {
+        const parsed = new Date(str);
+        if (!isNaN(parsed.getTime())) {
+          if (str.includes('T00:00:00') && !str.includes(':01')) {
+            const datePart = str.split('T')[0];
+            const [y, m, d] = datePart.split('-').map(Number);
+            closeTime = new Date(y, m - 1, d, 23, 59, 59, 999).getTime();
+          } else {
+            closeTime = parsed.getTime();
+          }
+        }
+      }
+      return !isNaN(closeTime) && Date.now() > closeTime;
+    };
+
+    const closesAtDate = matchedEvent.registration_closes_at || fallbackEvent?.settings?.registration_closes_at;
+    const isAutoClosed = isDateExpired(closesAtDate);
+
+    // Reject new registrations if the event is closed or close date has passed
+    if ((matchedEvent.status === 'closed' || isAutoClosed) && !payload.id) {
       return res.status(403).json({
         error: 'EVENT_CLOSED',
-        message: `Registrations for "${matchedEvent.name}" have been closed by the organizer.`
+        message: `Registrations for "${matchedEvent.name}" are closed.`
       });
     }
 

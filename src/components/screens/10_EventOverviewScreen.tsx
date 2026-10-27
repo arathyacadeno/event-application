@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useEventStore } from '../../store/eventStore';
 import { AdminLayout } from '../layout/AdminLayout';
 import { exportRegistrationsToExcel } from '../../utils/exportUtils';
+import { isEventRegistrationClosed } from '../../utils/eventStatusUtils';
 import { 
   Calendar, 
   MapPin, 
@@ -96,15 +97,28 @@ export const EventOverviewScreen: React.FC = () => {
       headerAction={
         <div className="flex items-center gap-2 flex-wrap">
           {/* Status Badge */}
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
-            evt.status === 'active' 
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-              : evt.status === 'closed'
-              ? 'bg-rose-50 text-rose-700 border border-rose-200'
-              : 'bg-slate-100 text-slate-700 border border-slate-200'
-          }`}>
-            {evt.status === 'active' ? '● Live' : evt.status === 'closed' ? '● Closed' : '● Draft'}
-          </span>
+          {(() => {
+            const isClosed = evt.status === 'closed' || isEventRegistrationClosed(evt, total);
+            if (evt.status === 'draft') {
+              return (
+                <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 border border-slate-200">
+                  ● Draft
+                </span>
+              );
+            }
+            if (isClosed) {
+              return (
+                <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 border border-rose-200">
+                  ● Closed
+                </span>
+              );
+            }
+            return (
+              <span className="text-xs font-bold px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200">
+                ● Live
+              </span>
+            );
+          })()}
 
           {/* Close / Reopen Event Button */}
           <button

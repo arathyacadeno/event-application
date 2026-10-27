@@ -51,7 +51,7 @@ export const PublishConfirmationScreen: React.FC = () => {
 
   const handleEmailShare = () => {
     const subject = encodeURIComponent(`Registration Link: ${selectedEvent?.name}`);
-    const body = encodeURIComponent(`Hi,\n\nYou are invited to register for "${selectedEvent?.name}".\n\n👉 Event Registration Link:\n${publicUrl}\n\n📅 Date: ${selectedEvent?.start_date}\n📍 Venue: ${selectedEvent?.venue || 'Acadeno Technologies'}\n\nFor any questions or help, reach out at arathy@acadeno.in\n\nBest regards,\nArathy\nACADENO Technologies Pvt. Ltd.\narathy@acadeno.in`);
+    const body = encodeURIComponent(`Hi,\n\nYou are invited to register for "${selectedEvent?.name}".\n\n👉 Event Registration Link:\n${publicUrl}\n\n📅 Date: ${selectedEvent?.start_date}\n📍 Venue: ${selectedEvent?.venue || 'Acadeno Technologies'}\n\nFor any questions or help, reach out at admin@acadeno.in\n\nBest regards,\nSuper Admin\nACADENO Technologies Pvt. Ltd.\nadmin@acadeno.in`);
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   };
 

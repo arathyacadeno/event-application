@@ -2,7 +2,7 @@ import { Organization, User, Event, Registration, AuditLog, ThemeTemplate } from
 
 export const initialOrganization: Organization = {
   id: 'f56b03a9-9097-4638-8c4a-6f68227b2789',
-  name: 'ACADENO Technologies Pvt. Ltd. – CSEZ Unit',
+  name: 'Acadeno Research & Innovation Centre, First Floor, Kottakkal Arya Vaidyasala Building, Kallai Rd, Palayam, Kozhikode',
   slug: 'acadeno',
   logo_url: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=150&auto=format&fit=crop&q=80',
   plan: 'enterprise',

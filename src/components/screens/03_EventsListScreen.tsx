@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useEventStore } from '../../store/eventStore';
 import { AdminLayout } from '../layout/AdminLayout';
 import { EventStatus, Event } from '../../types';
+import { isEventRegistrationClosed } from '../../utils/eventStatusUtils';
 import { 
   Plus, 
   Search, 
@@ -178,17 +179,35 @@ export const EventsListScreen: React.FC = () => {
                 
                 {/* Status Badges */}
                 <div className="absolute top-3 left-3">
-                  <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs ${
-                    evt.status === 'active'
-                      ? 'bg-emerald-600 text-white'
-                      : evt.status === 'closed'
-                      ? 'bg-rose-600 text-white'
-                      : evt.status === 'draft'
-                      ? 'bg-blue-900/90 text-blue-200 backdrop-blur-xs'
-                      : 'bg-slate-700 text-slate-200'
-                  }`}>
-                    {evt.status === 'active' ? 'Live' : evt.status === 'closed' ? 'Closed' : evt.status === 'draft' ? 'Draft' : 'Archived'}
-                  </span>
+                  {(() => {
+                    const isClosed = isEventRegistrationClosed(evt, regCount);
+                    if (evt.status === 'draft') {
+                      return (
+                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs bg-blue-900/90 text-blue-200 backdrop-blur-xs">
+                          Draft
+                        </span>
+                      );
+                    }
+                    if (evt.status === 'archived') {
+                      return (
+                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs bg-slate-700 text-slate-200">
+                          Archived
+                        </span>
+                      );
+                    }
+                    if (evt.status === 'closed' || isClosed) {
+                      return (
+                        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs bg-rose-600 text-white">
+                          Closed
+                        </span>
+                      );
+                    }
+                    return (
+                      <span className="text-[11px] font-bold px-2.5 py-1 rounded-full shadow-xs bg-emerald-600 text-white">
+                        Live
+                      </span>
+                    );
+                  })()}
                 </div>
 
                 {/* More Action Menu */}

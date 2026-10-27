@@ -21,7 +21,7 @@ export async function ensureNeonSeed(prisma) {
     await prisma.organization.create({
       data: {
         id: DEFAULT_ORG_ID,
-        name: 'ACADENO Technologies Pvt. Ltd. – CSEZ Unit',
+        name: 'Acadeno Research & Innovation Centre, First Floor, Kottakkal Arya Vaidyasala Building, Kallai Rd, Palayam, Kozhikode',
         slug: 'acadeno',
         logo_url: 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=150&auto=format&fit=crop&q=80',
         plan: 'enterprise',

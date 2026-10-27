@@ -130,7 +130,7 @@ export const WizardSettingsScreen: React.FC = () => {
                   </label>
                   <input
                     type="date"
-                    value={settings.registration_opens_at ? settings.registration_opens_at.split('T')[0] : '2026-09-11'}
+                    value={settings.registration_opens_at ? settings.registration_opens_at.split('T')[0] : (wizardDraft.start_date || new Date().toISOString().split('T')[0])}
                     onChange={(e) => handleUpdateSettings('registration_opens_at', e.target.value)}
                     className="w-full h-10 px-3.5 bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#DCE5F0] rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1463FF]/10 focus:border-[#1463FF] transition-all font-medium"
                   />
@@ -143,11 +143,11 @@ export const WizardSettingsScreen: React.FC = () => {
                   </label>
                   <input
                     type="date"
-                    value={settings.registration_closes_at ? settings.registration_closes_at.split('T')[0] : '2026-09-18'}
+                    value={settings.registration_closes_at ? settings.registration_closes_at.split('T')[0] : (wizardDraft.end_date || wizardDraft.start_date || '')}
                     onChange={(e) => handleUpdateSettings('registration_closes_at', e.target.value)}
                     className="w-full h-10 px-3.5 bg-[#F8FAFC] hover:bg-white focus:bg-white border border-[#DCE5F0] rounded-xl text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1463FF]/10 focus:border-[#1463FF] transition-all font-medium"
                   />
-                  <p className="text-[11px] text-[#7184A3]">Transitions to Closed state automatically</p>
+                  <p className="text-[11px] text-[#7184A3]">Transitions to Closed state automatically when date ends</p>
                 </div>
               </div>
             </div>

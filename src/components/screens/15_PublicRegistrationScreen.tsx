@@ -19,6 +19,7 @@ import {
 import { Registration } from '../../types';
 import { RegistrationClosedScreen } from './17_RegistrationClosedScreen';
 import { toTitleCase, toSentenceCase } from '../../utils/textUtils';
+import { isEventRegistrationClosed } from '../../utils/eventStatusUtils';
 
 export const PublicRegistrationScreen: React.FC = () => {
   const { 
@@ -85,8 +86,8 @@ export const PublicRegistrationScreen: React.FC = () => {
     );
   }
 
-  // If event is explicitly closed by organizer, render RegistrationClosedScreen
-  if (selectedEvent.status === 'closed') {
+  // If event is closed (manually, or past registration_closes_at date, or capacity full), render RegistrationClosedScreen
+  if (isEventRegistrationClosed(selectedEvent, eventRegistrations?.length)) {
     return <RegistrationClosedScreen />;
   }
 

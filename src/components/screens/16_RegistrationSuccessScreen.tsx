@@ -82,7 +82,7 @@ export const RegistrationSuccessScreen: React.FC = () => {
   const evt = selectedEvent || {
     id: 'evt-01',
     name: 'Python FullStack',
-    venue: 'Acadeno Technologies',
+    venue: 'Acadeno Research & Innovation Centre, First Floor, Kottakkal Arya Vaidyasala Building, Kallai Rd, Palayam, Kozhikode',
     start_date: '2026-09-30',
     end_date: '2026-09-30',
     start_time: '10:00 AM',
@@ -350,7 +350,7 @@ export const RegistrationSuccessScreen: React.FC = () => {
               >
                 <MapPin className="w-4 h-4 text-[#1769FF] shrink-0 mt-0.5" />
                 <span className="leading-snug underline decoration-blue-200 group-hover:decoration-blue-600">
-                  {evt.venue || 'Acadeno Technologies, Kozhikode'}
+                  {evt.venue || 'Acadeno Research & Innovation Centre, First Floor, Kottakkal Arya Vaidyasala Building, Kallai Rd, Palayam, Kozhikode'}
                 </span>
               </a>
             </div>

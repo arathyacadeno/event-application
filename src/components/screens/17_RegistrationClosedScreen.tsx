@@ -15,7 +15,7 @@ export const RegistrationClosedScreen: React.FC = () => {
 
   const evt = selectedEvent || {
     name: 'Python FullStack',
-    venue: 'Acadeno Technologies',
+    venue: 'Acadeno Research & Innovation Centre, First Floor, Kottakkal Arya Vaidyasala Building, Kallai Rd, Palayam, Kozhikode',
     settings: { registration_closes_at: '2026-09-30' }
   };
 
@@ -181,11 +181,11 @@ export const RegistrationClosedScreen: React.FC = () => {
         <div className="space-y-4 pt-1">
           <button
             type="button"
-            onClick={() => alert(`Contact ACADENO Event Organizer:\n\nEmail: arathy@acadeno.in\nPhone: +91 484 2900000\nUnit: ACADENO Technologies Pvt. Ltd., CSEZ Unit, Kochi`)}
+            onClick={() => alert(`Contact ACADENO Super Admin:\n\nRole: Super Admin\nEmail: admin@acadeno.in\nPhone: +91 82812 43266\nLocation: Acadeno Research & Innovation Centre, First Floor, Kottakkal Arya Vaidyasala Building, Kallai Rd, Palayam, Kozhikode`)}
             className="w-full py-3.5 px-6 rounded-xl bg-[#EAF3FF]/80 hover:bg-[#DCEBFF] border border-[#1769FF]/30 hover:border-[#1769FF] text-[#1769FF] font-bold text-xs sm:text-sm shadow-xs hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer group"
           >
             <Mail className="w-4 h-4 text-[#1769FF]" />
-            <span>Contact Event Organizer</span>
+            <span>Contact Super Admin</span>
             <ArrowRight className="w-4 h-4 text-[#1769FF] group-hover:translate-x-0.5 transition-transform" />
           </button>
 

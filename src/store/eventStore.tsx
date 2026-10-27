@@ -14,6 +14,7 @@ import {
   themePresets 
 } from '../data/seedData';
 import { decodeEventFromUrlParams, findMatchingEvent, matchesEvent } from '../utils/eventShareUtils';
+import { isEventRegistrationClosed } from '../utils/eventStatusUtils';
 import { 
   syncEventToCloud, 
   syncRegistrationToCloud, 
@@ -945,6 +946,14 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
     if (targetEvt && targetEvt.id !== finalEventId) {
       targetEvt = { ...targetEvt, id: finalEventId };
+    }
+
+    // --- Automatic Event Closed / Expiry Check ---
+    const currentRegCount = registrations.filter(r => r.event_id === finalEventId || r.event_id === eventId).length;
+    if (isEventRegistrationClosed(targetEvt, currentRegCount)) {
+      const err: any = new Error(`Registration for "${targetEvt?.name || 'this event'}" is closed.`);
+      err.code = 'EVENT_CLOSED';
+      throw err;
     }
 
     // --- Deduplication Check (Strictly Email per Event) ---

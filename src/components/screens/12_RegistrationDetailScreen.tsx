@@ -153,9 +153,9 @@ ${passUrl}
 
 Please present this pass at the entrance for instant check-in.
 
-For assistance, contact: arathy@acadeno.in
+For assistance, contact: admin@acadeno.in
 Best regards,
-Arathy — ACADENO Event Operations`;
+Super Admin — ACADENO Event Operations`;
 
   const emailSubject = `Official Event Pass: ${eventName} (Ticket #${reg.registration_code})`;
   const emailBody = `Dear ${reg.name},
@@ -170,12 +170,12 @@ Here are your official registration pass details:
 
 Please show this pass or your QR code at the registration desk for check-in.
 
-If you have any questions or need support, reply directly to this email or reach out to arathy@acadeno.in.
+If you have any questions or need support, reply directly to this email or reach out to admin@acadeno.in.
 
 Best regards,
-Arathy
+Super Admin
 ACADENO Technologies Pvt. Ltd.
-arathy@acadeno.in`;
+admin@acadeno.in`;
 
   const handleOpenWhatsApp = () => {
     if (!cleanPhoneForWa || cleanPhoneForWa.length < 5) {
