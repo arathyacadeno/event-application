@@ -18,13 +18,23 @@ import {
 } from 'lucide-react';
 
 export const PublishConfirmationScreen: React.FC = () => {
-  const { selectedEvent, setScreen, showToast } = useEventStore();
+  const { selectedEvent, wizardDraft, events, setScreen, showToast } = useEventStore();
   const [qrUrl, setQrUrl] = useState<string>('');
   const [copied, setCopied] = useState(false);
 
+  // Robust active event resolution: selectedEvent -> wizardDraft -> first event in catalogue -> clean default
+  const activeEvent = selectedEvent || (wizardDraft?.name ? (wizardDraft as any) : undefined) || (events && events.length > 0 ? events[0] : undefined) || {
+    id: 'evt-ai-workshop',
+    org_id: 'default',
+    name: 'Ai Workshop',
+    slug: 'ai-workshop',
+    venue: 'Acadeno Office',
+    start_date: '2026-09-11'
+  };
+
   const origin = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:5173';
-  const eventSlug = selectedEvent?.slug || (selectedEvent?.name ? selectedEvent.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'new-event');
-  const publicUrl = encodeEventToShareUrl(selectedEvent, origin);
+  const eventSlug = activeEvent?.slug || (activeEvent?.name ? activeEvent.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'ai-workshop');
+  const publicUrl = encodeEventToShareUrl(activeEvent, origin) || `${origin}/?event=${encodeURIComponent(eventSlug)}`;
 
   useEffect(() => {
     generateQrDataUrl(publicUrl, { width: 480, margin: 1 }).then(setQrUrl);
@@ -45,13 +55,13 @@ export const PublishConfirmationScreen: React.FC = () => {
   };
 
   const handleWhatsAppShare = () => {
-    const text = encodeURIComponent(`Register now for "${selectedEvent?.name}":\n${publicUrl}`);
+    const text = encodeURIComponent(`Register now for "${activeEvent?.name}":\n${publicUrl}`);
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   };
 
   const handleEmailShare = () => {
-    const subject = encodeURIComponent(`Registration Link: ${selectedEvent?.name}`);
-    const body = encodeURIComponent(`Hi,\n\nYou are invited to register for "${selectedEvent?.name}".\n\n👉 Event Registration Link:\n${publicUrl}\n\n📅 Date: ${selectedEvent?.start_date}\n📍 Venue: ${selectedEvent?.venue || 'Acadeno Technologies'}\n\nFor any questions or help, reach out at admin@acadeno.in\n\nBest regards,\nSuper Admin\nACADENO Technologies Pvt. Ltd.\nadmin@acadeno.in`);
+    const subject = encodeURIComponent(`Registration Link: ${activeEvent?.name}`);
+    const body = encodeURIComponent(`Hi,\n\nYou are invited to register for "${activeEvent?.name}".\n\n👉 Event Registration Link:\n${publicUrl}\n\n📅 Date: ${activeEvent?.start_date}\n📍 Venue: ${activeEvent?.venue || 'Acadeno Technologies'}\n\nFor any questions or help, reach out at admin@acadeno.in\n\nBest regards,\nSuper Admin\nACADENO Technologies Pvt. Ltd.\nadmin@acadeno.in`);
     window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
   };
 
@@ -235,7 +245,7 @@ export const PublishConfirmationScreen: React.FC = () => {
 
                 {/* Event Name & Venue / Date */}
                 <div className="text-base sm:text-lg font-bold text-white font-display truncate w-full px-1">
-                  {selectedEvent?.name || 'Ai Workshop'}
+                  {activeEvent?.name || 'Ai Workshop'}
                 </div>
                 <a
                   href="https://share.google/DUvnFnW6buz6xdoAZ"
@@ -244,7 +254,7 @@ export const PublishConfirmationScreen: React.FC = () => {
                   className="text-xs text-slate-300 hover:text-white underline decoration-slate-500 hover:decoration-white mt-1 truncate w-full px-1 block transition-colors"
                   title="Click to view location on Google Maps"
                 >
-                  {selectedEvent?.venue || 'Acadeno Office'} • {selectedEvent?.start_date || '2026-09-11'}
+                  {activeEvent?.venue || 'Acadeno Office'} • {activeEvent?.start_date || '2026-09-11'}
                 </a>
 
                 {/* Scan Pill */}

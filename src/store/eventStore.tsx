@@ -230,7 +230,14 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   });
 
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-  const [selectedEventId, setSelectedEventId] = useState<string>('');
+  const [selectedEventId, setSelectedEventId] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem('acadeno_selected_event_id') || '';
+      } catch {}
+    }
+    return '';
+  });
   const [selectedRegistrationId, setSelectedRegistrationId] = useState<string | null>(null);
   const [isEventLoading, setIsEventLoading] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -277,6 +284,17 @@ export const EventProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
     }
   }, [events]);
+
+  // Persist selectedEventId to local storage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        if (selectedEventId) {
+          localStorage.setItem('acadeno_selected_event_id', selectedEventId);
+        }
+      } catch {}
+    }
+  }, [selectedEventId]);
 
 
 

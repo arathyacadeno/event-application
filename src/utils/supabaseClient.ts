@@ -4,7 +4,7 @@ const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export const DEFAULT_ORG_ID = 'f56b03a9-9097-4638-8c4a-6f68227b2789';
 export const DEFAULT_USER_ID = 'd79ebd86-73b7-4f55-9108-cdda19919cf0';
-export const SUPABASE_PROJECT_REF = 'neon-ep-proud-resonance';
+export const SUPABASE_PROJECT_REF = 'ep-frosty-lab-b56kd9nt';
 export const NEON_LABEL = 'Neon Postgres';
 
 async function apiRequest<T>(path: string, options?: RequestInit): Promise<{ data: T | null; error: Error | null }> {
